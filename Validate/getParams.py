@@ -1,67 +1,4 @@
-# from svmutil import *
-# from svm import *
-# y = [1, -1]
-# x = [{1: 2, 2: 1}, {1: -1, 2: -1}]
-# # x = [{0:1,1:4,2:6,3:2},
-# #      {0:2,1:6,2:18,3:0},
-# #      {0:3,1:1,2:0,3:1}]
-#
-#
-# # prob = svm_problem(y, x)
-# # print(prob)
-# # param = svm_parameter('-t 0 -c 4 -b 1')
-# # model = svm_train(prob, '-t 4')
-# model = svm_train(y,x, '-t 1')
-# yt = [1]
-# xt = [{1: -1, 2: -1}]
-# # xt = [{0:4,1:2,2:0,3:1}]
-#
-# p_label, p_acc, p_val = svm_predict(yt, xt, model)
-# print(p_label,p_acc, p_val)
 
-
-# from svmutil import *
-# from svm import *
-# y,x = svm_read_problem('D:\libsvm-3.18\heart_scale')
-# print(y)
-# print(x)
-# m = svm_train(y[:200], x[:200], '-c 4')
-# print ('----------------')
-# lable, acc, val = svm_predict(y[200:], x[200:], m)
-
-#
-# from svmutil import *
-# from svm import *
-#
-# def kernel(x_all):
-#     for x in x_all:
-#
-#
-#
-# y,x = svm_read_problem('D:\libsvm-3.18\heart_scale')
-
-
-# train_data = x[:150]
-# train_label = y[:150]
-# test_data = x[150:]
-# test_label = y[150:]
-
-#线性核函数
-# model_linear = svm_train(train_label, train_data, '-t 0')
-# predict_label_L, accuracy_L, dec_values_L = svm_predict(test_label, test_data, model_linear)
-# print(test_label)
-# print(predict_label_L)
-# print(accuracy_L)
-
-
-#使用的核函数 K(x,x') = (x * x')
-#核矩阵
-
-# model_precomputed1 = svm_train(train_label, train_data, '-t 4')
-# predict_label_P1, accuracy_P1, dec_values_P1 = svm_predict(test_label, test_data, model_precomputed1)
-# print(test_label)
-# print(predict_label_P1)
-# print(accuracy_P1)
 
 from svmutil import *
 from svm import *
@@ -78,87 +15,39 @@ import codecs
 from sklearn import preprocessing
 import gc
 import time
-
-
-def getPosNegWords():
-    """
-    :return: 正面评价词语，负面评价词语
-    """
-    positive_lines = open('D:/chenjiao/虚假新闻论文/数据集/HowNet/HowNetsentiment/中文/正面评价词语（中文）.txt', 'r',
-                          encoding='GBK').readlines()
-    negative_lines = open('D:/chenjiao/虚假新闻论文/数据集/HowNet/HowNetsentiment/中文/负面评价词语（中文）.txt', 'r',
-                          encoding='GBK').readlines()
-    pos_words = []
-    neg_words = []
-    for line in positive_lines:
-        pos_words.append(line.replace('\n', '').replace(' ', ''))
-    for line in negative_lines:
-        neg_words.append(line.replace('\n', '').replace(' ', ''))
-    pos_words = pos_words[2:]
-    neg_words = neg_words[2:]
-
-    return pos_words,neg_words
-
-posWords,negWords = getPosNegWords()
+import random
 
 class Info(object):
-    def __init__(self,data):
+    def __init__(self,data,param=10):
         if data!= None:
-            # self.reposts_count = data.get('reposts_count')
-            # self.uid = data.get('uid')
-            # self.bi_followers_count = data.get('bi_followers_count')
+            self.reposts_count = data.get('reposts_count')
+            self.uid = data.get('uid')
+            self.bi_followers_count = data.get('bi_followers_count')
             self.text = data.get('text')
-            # self.original_text = data.get('original_text')
-            # self.user_description = data.get('user_description')
-            # self.friends_count = data.get('friends_count')
-            # self.mid = data.get('mid')
-            # self.attitudes_count = data.get('attitudes_count')
-            # self.followers_count = data.get('followers_count')
-            # self.statuses_count = data.get('statuses_count')
+            self.original_text = data.get('original_text')
+            self.user_description = data.get('user_description')
+            self.friends_count = data.get('friends_count')
+            self.mid = data.get('mid')
+            self.attitudes_count = data.get('attitudes_count')
+            self.followers_count = data.get('followers_count')
+            self.statuses_count = data.get('statuses_count')
             self.verified = data.get('verified')
-            # self.user_created_at = data.get('user_created_at')
-            # self.favourites_count = data.get('favourites_count')
-            # self.gender = data.get('gender')
-            # self.comments_count = data.get('comments_count')
+            self.user_created_at = data.get('user_created_at')
+            self.favourites_count = data.get('favourites_count')
+            self.gender = data.get('gender')
+            self.comments_count = data.get('comments_count')
             self.t = data.get('t')
-            # self.approval_score = random.random()
-            # self.doubt_score = random.random()
+            self.approval_score = random.random()
+            self.doubt_score = random.random()
 
-            app_score,doubt_score = approval_doubt_score(self.text,posWords,negWords)
-            self.approval_score = app_score
-            self.doubt_score = doubt_score
-
-
-            if int(data.get('friends_count')) > 0 and int(data.get('followers_count'))/int(data.get('friends_count')) >= 20 and int(data.get('followers_count')) >=1000:
+            if int(data.get('friends_count')) > 0 and int(data.get('followers_count'))/int(data.get('friends_count')) >= float(param) and int(data.get('followers_count')) >=1000:
                 self.type = 'o'
             else:
                 self.type = 'n'
         else:
-            self.approval_score = 0
-            self.doubt_score = 0
+            self.approval_score = random.random()
+            self.doubt_score = random.random()
             self.type = 'n'
-
-
-def approval_doubt_score(text,pos_words,neg_words):
-    """
-
-    :param text:
-    :param pos_words:
-    :param neg_words:
-    :return: 文本的支持分数，怀疑分数
-    """
-    posCount = 0
-    negCount = 0
-    clean_text = clean_stopwords(participate(text,withPosTagging=False))
-    if len(clean_text) == 0:
-        return 0,0
-    else:
-        for word in clean_text:
-            if word in pos_words:
-                posCount+=1
-            elif word in neg_words:
-                negCount+=1
-        return round(posCount/len(clean_text),2),round(negCount/len(clean_text),2)
 
 def sim(node1,node2):
     vec1 = [node1.data.approval_score,node1.data.doubt_score]
@@ -206,7 +95,7 @@ def rbf_kernel(XTrain1,XTrain2,sigma):
         rbf_kernel = np.e ** (-(np.power(np.linalg.norm(XTrain1 - XTrain2), 2)) / (2 * np.power(sigma, 2)))
         return round(rbf_kernel,2)
 
-def kernel_preProcess(Train_tree,XTrain,Test_tree=None,XTest=None,isTraining=True,param_a=0.5,sigma=0.5,myK=0):
+def kernel_preProcess(Train_tree,Test_tree=None,isTraining=True,param_a=0.5,sigma=0.5,myK=0):
 
     # x_return = []
     product_matrix = None
@@ -219,6 +108,9 @@ def kernel_preProcess(Train_tree,XTrain,Test_tree=None,XTest=None,isTraining=Tru
             print('time_begin:',time_begin)
             x_dict = {}
             x_dict[0] = i + 1
+
+
+
             i_nodes = len(Train_tree[i].all_nodes())
             for j in range(0,len(Train_tree)):
                 j_nodes = len(Train_tree[j].all_nodes())
@@ -229,13 +121,13 @@ def kernel_preProcess(Train_tree,XTrain,Test_tree=None,XTest=None,isTraining=Tru
                 print(i,j, "计算随机游走图核")
                 rwg_kernel_val = rwg_kernel(product_matrix, param_a=param_a)
                 # print(i,j,"计算随机游走图核完毕")
-                print(i,j,"计算径向基核")
-                rbf_kernel_val = rbf_kernel(XTrain[i], XTrain[j],sigma=sigma)
+
                 # print(i,j,"计算径向基核完毕")
-                x_dict[j + 1] = rwg_kernel_val + rbf_kernel_val
+                x_dict[j + 1] = rwg_kernel_val
                 # kernel_matrix[i,j] = rwg_kernel_val + rbf_kernel_val
                 # if i!=j:
                 #     kernel_matrix[j,i] = rwg_kernel_val + rbf_kernel_val
+    
             write_xdict_toFile(x_dict,'./Kernels/xdict_Train{}'.format(myK))
             print(i,j,"成功写入文件")
             time_end = int(time.time())
@@ -270,9 +162,9 @@ def kernel_preProcess(Train_tree,XTrain,Test_tree=None,XTest=None,isTraining=Tru
                 rwg_kernel_val = rwg_kernel(product_matrix, param_a=param_a)
                 # print(i, j, "计算随机游走图核完毕")
                 # print(i, j, "计算径向基核")
-                rbf_kernel_val = rbf_kernel(XTest[i], XTrain[j],sigma=sigma)
+
                 # print(i, j, "计算径向基核完毕")
-                x_dict[j + 1] = rwg_kernel_val + rbf_kernel_val
+                x_dict[j + 1] = rwg_kernel_val
             write_xdict_toFile(x_dict, './Kernels/xdict_Test{}'.format(myK))
             del (product_matrix)
             gc.collect()
@@ -320,153 +212,9 @@ def write_xdict_toFile(xdict,path):
     with open(path, 'a+') as file:
         file.write(data + '\n')
 
-def init():
-    jieba.add_word('微博',tag='n')
-    jieba.add_word('笑而不语')
-def illegal_char(s):
-    s = re.compile(
-        u"[^"
-        u"\u4e00-\u9fa5" #中文
-        # u"\u0041-\u005A" #英文
-        # u"\u0061-\u007A" #英文
-        # u"\u0030-\u0039" #数字
-        #中文标点
-        # u"\u3002\uFF1F\uFF01\uFF0C\u3001\uFF1B\uFF1A\u300C\u300D\u300E\u300F\u2018\u2019\u201C\u201D\uFF08\uFF09\u3014\u3015\u3010\u3011\u2014\u2026\u2013\uFF0E\u300A\u300B\u3008\u3009"
-        #英文标点
-        # u"\!\@\#\$\%\^\&\*\(\)\-\=\[\]\{\}\\\|\;\'\:\"\,\.\/\<\>\?\/\*\+"
-        u"]+")\
-        .sub('', s)
-    return s
 
-def participate(text,withPosTagging=True):
-    seg_list = []
 
-    if withPosTagging == True:
-        seg_list = pseg.cut(text)
-    else:
-        seg_list = jieba.cut(text, cut_all=False)
-    return seg_list
 
-def get_stopwords():
-    path = 'chinese_stopwords.txt'
-    # stoplist = {}.fromkeys([line.strip for line in codecs.open(path,'r','utf-8')])
-    stoplist = []
-    file = open(path,'r',encoding='utf-8').read()
-    for line in file:
-        stoplist.append(line)
-    return stoplist
-
-def clean_stopwords(text_par):
-    clean_stop = []
-    stop_list = get_stopwords()
-    for word in text_par:
-        if word not in stop_list:
-            clean_stop.append(word)
-    return clean_stop
-
-def get_pos_num(seg_list,type):
-    count = 0
-    for w in seg_list:
-        if(w.flag==type):
-            count+=1
-    return count
-def extract_features(info):
-    features = {'rep_count':0,
-                'comments_count':0,
-
-                'stopword_count':0,
-                'text_length':0,
-                'text_NN_rat':0,
-                'text_verb_rat':0,
-                'text_adj_rat':0,
-                '@_count':0,
-                '?_count':0,
-                '!_count':0,
-                'has_hashtag':0,
-                'has_url':0,
-
-                'bi_followers_count':0,
-                'friends_count':0,
-                'is_verified':0,
-                'followers_count':0,
-                'statuses_count':0,
-                'is_male':0,
-                'favourites_count':0}
-    #社交网络特征
-    features['rep_count'] = info.reposts_count
-    features['comments_count'] = info.comments_count
-
-    #文本特征
-    text = info.text
-    seg_text1 = participate(illegal_char(text))
-    seg_text2 = []
-    stoplist = get_stopwords()
-    seg_text3 = []
-    for w in seg_text1:
-        if (w.word not in stoplist):
-            seg_text3.append(w)
-            seg_text2.append(w.word)
-        else:
-            if 'stopword_count' not in features:
-                features['stopword_count'] = 1
-            else:
-                features['stopword_count'] += 1
-    features['text_length'] = len(text)
-    features['text_NN_rat'] = get_pos_num(seg_text3, 'n') / (len(seg_text3) + 1)
-    features['text_verb_rat'] = get_pos_num(seg_text3,'v') / (len(seg_text3) + 1)
-    features['text_adj_rat'] = get_pos_num(seg_text3,'a') / (len(seg_text3) + 1)
-    features['@_count'] = str(info.original_text).count('@')
-    features['?_count'] = str(info.text).count('?')+ str(info.text).count('？') # 英文问号+中文问号
-    features['!_count'] = str(info.text).count('!')+str(info.text).count('！')  # 英文感叹号+中文感叹号
-
-    if info.text.startswith("【") or info.text.startswith("#") or info.text.startswith("["):
-        features['has_hashtag'] = 1
-    else:
-        features['has_hashtag'] = 0
-    if info.text.__contains__("http"):
-        features['has_url'] = 1
-    else:
-        features['has_url'] = 0
-    #用户特征
-    features['bi_followers_count'] = info.bi_followers_count
-    features['friends_count'] = info.friends_count
-    if info.verified == True:
-        features['is_verified'] = 1
-    else:
-        features['is_verified'] = 0
-    features['followers_count'] = info.followers_count
-    features['statuses_count'] = info.statuses_count
-    if info.gender == 'm':
-        features['is_male'] = 1
-    else:
-        features['is_male'] = 0
-    features['favourites_count'] = info.favourites_count
-
-    return features
-
-def zscore_features(features):
-    """
-
-    :param features: features是dict形式的列表 [{},{}]
-    :return:
-    """
-
-    features_list = [feature[key] for feature in features for key in feature]
-    features_arr = np.array(features_list)
-    features_arr = features_arr.reshape(len(features),-1)
-    zscore_features = preprocessing.scale(features_arr)
-    return zscore_features
-
-def write_infos_to_file(path,infos,eid,label):
-    with codecs.open(path, 'a+', encoding='utf-8') as info_file:
-        info_file.write(eid+'\t')
-        for key in infos:#key2-->[count,rep_count,comments_count...]
-            if type(infos[key]) is list:
-                for item in infos[key]:
-                    info_file.write(str(item) + '\t')
-            else:
-                info_file.write(str(infos[key])+'\t')
-        info_file.write(label+'\n')
 
 
 def level_simplify_tree(tree,root,modified = False):
@@ -584,14 +332,16 @@ def getFN(predictions,input_y):
 
 
 if __name__ == "__main__":
-    #对所有数据构建传播树，生成的传播树全放到trees列表
-    init()
+    #构造1000条数据，其中502条虚假，498条真实
+    random.seed(1)
+    random_index = random.sample(range(0, 4664), 1000)
+
     data = pd.read_csv('D:/chenjiao/SinaWeibo/datasets2/Weibo.txt', sep='\t', header=None)
-    data_array = data.as_matrix()
+    data_array = data.as_matrix()[random_index]
+
+
     trees = []
-    features = []
-    features_zscore = []
-    need_write_headers = True
+    param_a = [5,10,20,30]
 
     for i in range(data_array.shape[0]):
         eid = str(data_array[i][0]).replace('eid:', '')
@@ -603,7 +353,7 @@ if __name__ == "__main__":
 
         #构建新闻事件传播树
         tree = Tree()
-        tree.create_node(tag=json_data[0].get("mid"),identifier=json_data[0].get("mid"),data=Info(json_data[0]))
+        tree.create_node(tag=json_data[0].get("mid"),identifier=json_data[0].get("mid"),data=Info(json_data[0],param = 10))
         uu = 1000 if len(json_data) >=1000 else len(json_data)
         # print('uu:',uu)
         for j in range(1,uu):
@@ -619,52 +369,28 @@ if __name__ == "__main__":
         trees.append(tree)
         # print(eid,"---trees simplified")
 
-        #提取新闻原文的相关特征,并写入文件
-        feature = extract_features(Info(json_data[0]))
-        feature['tree_depth'] = tree.depth()
-        features.append(feature)
-        print(eid,"---features extracted")
 
-        # feature_path = './Features/features1.txt'
-        # if need_write_headers:
-        #     need_write_headers = False
-        #
-        #     with codecs.open(feature_path, 'a+', encoding='utf-8') as info_file:
-        #         info_file.write('eid'+'\t')
-        #         for key in feature: #key-->[rep_count,comments_count...]
-        #             if type(feature[key]) is list:
-        #                 for index, item in enumerate(feature[key]):
-        #                     info_file.write(str(key) + '_{}'.format(str(index)) + '\t')
-        #             else:
-        #                 info_file.write(str(key) + '\t')
-        #         info_file.write('label'+'\n')
-        # write_infos_to_file(feature_path,feature,eid,label=label)
-        #提取特征结束，并成功写入文件
+
 
     #所有新闻事件的传播树构建结束
 
-    #对求得的features做标准化
 
-    features_list = [feature[key] for feature in features for key in feature]
-    features_arr = np.array(features_list).reshape(len(features), -1)
-    features_zscore = preprocessing.scale(features_arr)
 
-    #五折交叉法
+    #3折交叉法
     pd_data = pd.read_csv('id_label.txt', sep='\t', header=None)
     # wb_data = pd_data.as_matrix()[0:20,]
-    wb_data = pd_data.as_matrix()
-    kf = ShuffleSplit(n_splits=5, random_state=0,test_size=0.2)
+    wb_data = pd_data.as_matrix()[random_index]
+
+
+    kf = ShuffleSplit(n_splits=3, random_state=0,test_size=0.3)
     myK = 0
     for train, test in kf.split(wb_data):
         print('train_len:',train.shape[0])
         print('test_len:',test.shape[0])
         train_trees = []
         test_trees = []
-        # train_features = []
-        # test_features = []
 
-        train_features = features_zscore[train]
-        test_features = features_zscore[test]
+
 
         train_ids = wb_data[train][:,0].tolist()
         train_labels = wb_data[train][:,1].tolist()
@@ -674,10 +400,10 @@ if __name__ == "__main__":
 
         for train_index in train.tolist():
             train_trees.append(trees[train_index])
-            # train_features.append(features[train_index])
+
         for test_index in test.tolist():
             test_trees.append(trees[test_index])
-            # test_features.append(features[test_index])
+
         #对传播树核化
         # train_data = rwg_kernel_preProcess(train_trees,isTraining=True)
         # test_data = rwg_kernel_preProcess(train_trees,test_trees,isTraining=False)
@@ -691,6 +417,8 @@ if __name__ == "__main__":
 
         kernel_preProcess(Train_tree=train_trees, XTrain=train_features, isTraining=True,myK=myK)
         kernel_preProcess(Train_tree=train_trees, XTrain=train_features, Test_tree=test_trees,XTest=test_features, isTraining=False, myK=myK)
+
+
         #根据自定义的核函数训练模型
         # model_precomputed1 = svm_train(train_labels, train_data, '-t 4')
         # #预测
